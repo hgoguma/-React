@@ -1,7 +1,10 @@
 import React, { Component } from 'react';
 import Subject from "./components/Subject";
 import TOC from "./components/TOC";
-import Content from "./components/Content";
+import ReadContent from "./components/ReadContent";
+import Control from "./components/Control";
+import CreateContent from './components/CreateContent';
+
 import './App.css';
 
 
@@ -9,8 +12,9 @@ import './App.css';
 class App extends Component{
   constructor(props){   //constructor : render 함수 보다 먼저 실행되면서 컴포넌트를 초기화시켜주는 역할!
     super(props);
+    this.max_content_id = 3;  
     this.state = {
-      mode : 'read',
+      mode : 'create',
       selected_content_id : 2,
       subject : {title : 'WEB이다!!', sub : 'World wide web'},
       welcome:{title:'welcome', desc:'hello react'},
@@ -22,11 +26,12 @@ class App extends Component{
     } //this.state => state 값을 초기화 시켜줌
   }
   render() {
-    var _title, _desc = null;
+    var _title, _desc, _article = null;
 
     if(this.state.mode === 'welcome'){
       _title = this.state.welcome.title;
       _desc = this.state.welcome.desc;
+      _article = <ReadContent title={_title} desc={_desc}></ReadContent>
     } else if(this.state.mode === 'read'){
       var i = 0; 
       while(i<this.state.contents.length){
@@ -38,6 +43,20 @@ class App extends Component{
         }
         i++;
       }
+      _article = <ReadContent title={_title} desc={_desc}></ReadContent>
+    } else if(this.state.mode === "create"){
+      _article = <CreateContent onSubmit={function(_title, _desc) {
+        //add content to this.state.contents
+        this.max_content_id++;
+        // var _contents = this.state.contents.concat(
+        //   {id : this.max_content_id, title:_title, desc:_desc}
+        // );
+        var newContents = Array.from(this.state.contents); //새로 배열 복제
+        newContents.push({id : this.max_content_id, title:_title, desc:_desc});
+        this.setState({
+          contents : newContents
+        })
+      }.bind(this)}></CreateContent>
     }
     return (
       <div className="App">
@@ -55,8 +74,15 @@ class App extends Component{
             mode:'read',
             selected_content_id : Number(id)
         });
-        }.bind(this)} data={this.state.contents}></TOC>
-        <Content title={_title} desc={_desc}></Content>
+        }.bind(this)} data={this.state.contents}>
+        </TOC>
+        <Control onChangeMode={function(mode){
+          this.setState({
+            mode:mode
+          });
+          
+        }.bind(this)}></Control>
+        {_article}
       </div>
     );
   }
